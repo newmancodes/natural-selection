@@ -2,7 +2,6 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::Formatter;
 
-#[derive(Debug)]
 pub struct World {
     locations: Vec<WorldLocation>,
 }
@@ -23,7 +22,7 @@ impl fmt::Display for WorldError {
 }
 
 pub fn new(size: u8) -> Result<World, WorldError> {
-    if size <= 32 {
+    if size < 32 {
         return Err(
             WorldError
             {
@@ -31,12 +30,17 @@ pub fn new(size: u8) -> Result<World, WorldError> {
             });
     }
 
+    let mut locations = Vec::with_capacity(size as usize);
+    for _ in 0..size {
+        locations.push(WorldLocation::Empty);
+    }
     Ok(World { locations })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::matches;
 
     #[test]
     fn size_must_be_at_least_thirty_two() {
@@ -48,6 +52,10 @@ mod tests {
     #[test]
     fn world_is_created_empty() {
         let size: u8 = 32;
-        let world = new(size).unwrap();
+        let world = new(size).ok().unwrap();
+        assert_eq!(size as usize, world.locations.len());
+        for location in world.locations {
+            assert!(matches!(location, WorldLocation::Empty));
+        }
     }
 }
